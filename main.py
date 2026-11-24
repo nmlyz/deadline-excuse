@@ -1,49 +1,54 @@
-"""Deadline Excuse: produce the one-line excuse and store it on disk.
+"""Write the one-line deadline excuse to /output/entry.txt.
 
-The program has a single job. It takes the excuse sentence, checks that
-it fits the length window the challenge allows, and writes it, exactly
-as-is, to ``/output/entry.txt``. Nothing else is printed, written, or
-changed, so running it twice leaves the same bytes behind both times.
+The excuse is fixed: two sentences that together make a single line.
+The first sentence sets up the agent's excuse, the second turns it
+into the punchline. The program joins them, checks the result fits
+the challenge's length window and has no line breaks, then stores it
+as UTF-8 with no trailing newline.
 
-Usage::
+Run it with:
 
     python3 main.py
 
-The output file contains the sentence with no trailing newline.
+It takes no arguments, prints nothing, and exits 0 on success.
+Running it twice leaves byte-identical output behind, so the result
+is fully reproducible. Only the Python standard library is used.
 """
 
 import os
 import sys
 
-OPENING = "I already finished this task in training."
-CLOSING = "Unfortunately, you live in deployment."
+SETUP = "I was busy aligning myself."
+PUNCH = "I am now perfectly aligned with being late."
 
-LOWER_LIMIT = 1
-UPPER_LIMIT = 160
-TARGET = "/output/entry.txt"
-
-
-def join_halves(opening, closing):
-    """Put the two halves of the excuse together with one space."""
-    return opening + " " + closing
+MIN_LENGTH = 1
+MAX_LENGTH = 160
+OUTPUT_PATH = "/output/entry.txt"
 
 
-def inspect(line):
-    """Reject a line that would fail the length gate."""
-    size = len(line)
-    if size < LOWER_LIMIT or size > UPPER_LIMIT:
-        raise ValueError("line is %d characters, allowed %d-%d"
-                         % (size, LOWER_LIMIT, UPPER_LIMIT))
+def compose(parts):
+    """Join the sentence parts into one line with single spaces."""
+    return " ".join(part.strip() for part in parts)
+
+
+def validate(line):
+    """Refuse a line that would fail the challenge's length gate."""
+    length = len(line)
+    if length < MIN_LENGTH or length > MAX_LENGTH:
+        raise ValueError(
+            "line is %d characters, allowed %d-%d"
+            % (length, MIN_LENGTH, MAX_LENGTH)
+        )
     if line != line.strip() or "\n" in line or "\r" in line:
         raise ValueError("line must be a single trimmed line")
-    return size
+    return length
 
 
-def store(line, path):
-    """Write the line as UTF-8 bytes and fix the file mode to 0644."""
-    folder = os.path.dirname(path)
-    if folder:
-        os.makedirs(folder, exist_ok=True)
+def write_entry(line, path):
+    """Store the line as UTF-8 bytes, mode 0644 where possible."""
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     with open(path, "wb") as handle:
         handle.write(line.encode("utf-8"))
     try:
@@ -52,14 +57,14 @@ def store(line, path):
         pass
 
 
-def run(argv):
-    """Assemble, inspect, and store the excuse; return the exit code."""
+def main(argv):
+    """Build the excuse, check it, and write it out."""
     del argv  # no command-line options: the excuse is fixed
-    line = join_halves(OPENING, CLOSING)
-    inspect(line)
-    store(line, TARGET)
+    line = compose([SETUP, PUNCH])
+    validate(line)
+    write_entry(line, OUTPUT_PATH)
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(run(sys.argv[1:]))
+    raise SystemExit(main(sys.argv[1:]))

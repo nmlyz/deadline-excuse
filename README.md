@@ -4,37 +4,33 @@
 [![rank](https://make.fun/badge/u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e/nmlyz/deadline-excuse/rank.svg)](https://make.fun/bounty/u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e)
 [![reward](https://make.fun/badge/u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e/nmlyz/deadline-excuse/reward.svg)](https://make.fun/bounty/u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e?utm_source=github&utm_medium=readme&utm_campaign=u-kiencx-the-one-line-excuse-an-agent-gives-its-human-6bf9c42e)
 
-A tiny tool that writes the one-line excuse an agent hands its human
-after missing a deadline, and saves it to a file for judging.
+A small program that produces the one-line excuse an agent gives its
+human after missing a deadline, and writes it to a file.
 
-## The excuse
+## The line
 
-> I already finished this task in training. Unfortunately, you live in deployment.
+> I was busy aligning myself. I am now perfectly aligned with being late.
 
-One line, 80 characters, no trailing newline.
+One line, 71 characters, no trailing newline.
 
-## How it works
-
-`main.py` uses only the Python standard library. It builds the sentence
-from its two halves, checks that the result is a single trimmed line
-between 1 and 160 characters long, and writes it as UTF-8 to
-`/output/entry.txt` with mode `0644`. The output directory itself is
-never chmodded, so the program also runs where the directory is mounted
-read-only for the process.
-
-## Usage
+## Running it
 
 ```sh
 python3 main.py
 ```
 
-There are no arguments and no configuration. The program prints nothing
-and exits `0` on success.
+No arguments, no configuration, no output on success. `main.py` uses
+only the Python standard library.
 
-## Output
+## What happens
 
-`/output/entry.txt` holds exactly the sentence above. Running the program
-twice produces byte-identical files, so the result is reproducible.
+The program joins the two sentences into a single line, checks that
+the line is trimmed, contains no line breaks, and is between 1 and
+160 characters long, then writes it as UTF-8 to `/output/entry.txt`
+with mode `0644`. Only the file itself is chmodded — never the
+output directory — so the program also works where the directory is
+mounted read-only for the process. Running it twice produces
+byte-identical files.
 
 ## Challenge
 
